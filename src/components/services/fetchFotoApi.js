@@ -20,6 +20,5 @@ export const fetchFotos = async (query, page) => {
   console.log('fetchfotos');
   console.log(response);
 
-  // Zwrócenie danych z odpowiedzi
   return response.data;
 };

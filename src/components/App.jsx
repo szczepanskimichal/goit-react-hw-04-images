@@ -1,12 +1,54 @@
 import React, { useEffect, useState } from 'react';
 import '.App.css';
-import { fetchFotos } from '../api/fetchFotos';
+import { fetchFotos } from '../components/services/fetchFotos';
 import { SearchgBar } from './SearchBar';
 import { ImageGallery } from './ImageGallery/';
 import { ImageGalleryItem } from './ImageGalleryItem';
 import { Button } from './Button';
 import { Loader } from './Loader';
 import { Modal } from './Modal';
+
+const getQuery = event => {
+  event.preventDefault();
+  const searchKeyWord = event.target.elements.searchQuery.value;
+  if (searchKeyWord !== searchQuery) {
+    setSearchQuery(searchKeyWord);
+    setCurrentPage(1);
+    setImages([]);
+  }
+};
+
+const getURL = (imageURL, alt) => {
+  setImageURL(imageURL);
+  setImageAlt(alt);
+  setIsModalOpen(true);
+};
+
+useEffect(() => {
+  const showImages = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchFotos(searchQuery, currentPage);
+      const images = data.hits;
+      setTotalPages(Math.ceil(data.total / 40));
+      if (currentPage === 1) {
+        setImages(images);
+      } else {
+        setImages(prevImages => [...prevImages, ...images]);
+      }
+    } catch (error) {
+      setError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  showImages();
+}, [searchQuery, currentPage]);
+
+const loadMore = event => {
+  event.preventDefault();
+  setCurrentPage(prevCurrentPage => prevCurrentPage + 1);
+};
 
 const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,39 +61,29 @@ const App = () => {
   const [imageURL, setImageURL] = useState('');
   const [imageAlt, setImageAlt] = useState('');
 
-  //funkcja zamykajaca mod
-
   const closrModal = () => {
     setIsModalOpen(false);
   };
 
   return (
     <div className="App">
-      {/* Warunek sprawdzający, czy modal ma być otwarty */}
       {isModalOpen && (
         <Modal modalURL={imageURL} alt={imageAlt} onClose={closeModal} />
       )}
 
-      {/* Komponent do wyszukiwania */}
       <SearchBar getQuery={getQuery} />
 
-      {/* Warunek sprawdzający, czy wystąpił błąd podczas pobierania danych */}
       {error && <h1>Oops, something went wrong</h1>}
 
-      {/* Warunek sprawdzający, czy trwa ładowanie danych */}
       {isLoading && <Loader />}
 
-      {/* Warunek sprawdzający, czy są jakieś obrazy do wyświetlenia */}
       {images.length !== 0 && (
         <ImageGallery>
-          {/* Komponent wyświetlający pojedyncze obrazy w galerii */}
           <ImageGalleryItem data={images} saveURL={getURL} />
         </ImageGallery>
       )}
 
-      {/* Warunek sprawdzający, czy są obrazy do wyświetlenia i czy nie osiągnięto ostatniej strony */}
       {images.length !== 0 && currentPage !== totalPages && (
-        // Komponent do ładowania kolejnej strony obrazów
         <Button onClick={loadMore} />
       )}
     </div>

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import css from './Modal.module.css';
 
-export const Modal = ({ modalurl, alt, onClose }) => {
+export const Modal = ({ modalURL, alt, onClose }) => {
   useEffect(() => {
     const handleKeyDown = event => {
       if (event.code === 'Escape') {
@@ -10,6 +10,7 @@ export const Modal = ({ modalurl, alt, onClose }) => {
     };
 
     window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -24,7 +25,7 @@ export const Modal = ({ modalurl, alt, onClose }) => {
   return (
     <div className={css.Overlay} onClick={handleBackdropClick}>
       <div className={css.Modal}>
-        <img src={modalurl} alt={alt} />
+        <img src={modalURL} alt={alt} />
       </div>
     </div>
   );
